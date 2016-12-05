@@ -1,0 +1,42 @@
+version: '2'
+services:
+    web:
+        build:
+            context: ./
+            dockerfile: server/server-nginx.docker
+        image: web-nginx-1.10
+        volumes_from:
+            - app
+        ports:
+            - "8081:80"
+        links:
+            - app
+    app:
+        build:
+            context: ./
+            dockerfile: php/app-php-5.6.docker
+        image: app-php-5.6
+        volumes:
+            - ./code:/var/www
+            - ./php/log.conf:/usr/local/etc/php-fpm.d/yy-log.conf
+        links:
+            - database
+        environment:
+            - "DB_PORT=3306"
+            - "DB_HOST=database"
+    phpmyadmin:
+        image: phpmyadmin/phpmyadmin
+        container_name: phpmyadmin
+        environment:
+            - PMA_ARBITRARY=1
+        restart: always
+        ports:
+            - "8181:80"
+    database:
+        image: mysql:5.6
+        volumes:
+            - ./database/data:/var/lib/mysql
+        environment:
+            - "MYSQL_ROOT_PASSWORD=secret"
+        ports:
+            - "33061:3306"
